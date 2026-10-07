@@ -1,0 +1,18 @@
+{
+  "name": "it302-jrs239-organizations-backend",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Jorge Sanchez | jrs239 | IT-302 Section 451 | jrs239@njit.edu | Phase 2 Read MongoDB Data using Node.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "engines": { "node": ">=20.17.0" },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "mongodb": "^6.20.0"
+  }
+}
