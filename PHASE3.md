@@ -143,6 +143,9 @@ Import `postman/Phase3-jrs239.postman_collection.json`. The default `baseUrl` is
 `http://localhost:5000`. For a deployed service, set it to the actual HTTPS origin
 without a trailing slash. The `/api/v1/jrs239` path remains literal in every URL.
 Avoid an active Postman environment that overrides the collection variables.
+For this verified deployment, import and select
+`postman/Phase3-Render-jrs239.postman_environment.json`; it intentionally overrides
+only `baseUrl` with `https://it302-jrs239-phase3.onrender.com`.
 
 Send requests 01-07 in order. Request 01 selects an existing organization; POST
 automatically saves `commentId` and its creation date for PUT and DELETE.
@@ -175,30 +178,56 @@ No Phase 3 screenshots have been created as part of this implementation.
 
 ## Render deployment and remaining manual work
 
-Deployment was not performed: the available browser reached Render's sign-in
-page, and no Render API key was present. No deployed URL or deployed test result
-is claimed. The following setup is prepared for an authenticated session:
+Deployment is complete and verified on October 26, 2026:
 
-1. Make the organization dataset available in a MongoDB instance reachable from
-   Render. The current local `localhost:27017` server is not reachable from a
-   hosted web service. Keep the collection name `organizations_jrs239` and verify
-   the imported records before testing. Use a restricted database user and allow
-   the service's necessary network access.
-2. Create a Render Web Service connected to this GitHub repository and branch
-   `main`. Select Node, root directory `backend`, build command `npm ci`, and
-   start command `npm start`. Choose the appropriate available compute plan.
-3. In the service's Environment settings, securely set `MONGODB_URI` to that
-   reachable database's private connection string, `MONGODB_DATABASE` to its
-   database name, and `MONGODB_COLLECTION` to `organizations_jrs239`.
-   Do not upload or commit the local `.env`. Let Render supply `PORT`; the server
-   reads it and binds to `0.0.0.0`. `comments_jrs239` initializes on startup.
-4. Deploy and wait for a successful live deployment. Use the service's actual
-   HTTPS URL as Postman's `baseUrl`. Run all collection requests, verify stored
-   changes in that same hosted database, and confirm the original GET requests
-   still work. A 200 GET alone does not verify C.U.D.
-5. Capture the genuine screenshots described above, using the deployed URL if
-   required. Submit the repository link, `Phase3` tag, real service URL, and images
-   according to the instructor's handout.
+- Service origin: `https://it302-jrs239-phase3.onrender.com`.
+- GET: `https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/organizations`.
+- Comments: `https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments`.
+- Render service: `it302-jrs239-phase3`, free Node web service, Virginia.
+- Root directory `backend`; build `npm ci`; start `npm start`.
+- Health check `/api/v1/jrs239/organizations`; Render supplies `PORT`.
+- Atlas cluster `it302-jrs239`, free tier, database `it302`.
+- Both `organizations_jrs239` and `comments_jrs239` exist in Atlas.
+- Database user role is restricted to `readWrite@it302`.
+- The approved Render outbound ranges `74.220.49.0/24` and `74.220.57.0/24`
+  are active in the Atlas IP access list; password authentication remains required.
+
+`MONGODB_URI` is stored privately in Render's environment settings.
+`MONGODB_DATABASE=it302` and `MONGODB_COLLECTION=organizations_jrs239` are also
+configured. The ignored local `backend/.env.atlas` holds the private Atlas URI;
+the original ignored `backend/.env` continues to point to local MongoDB.
+Neither file is committed. Never include credentials in screenshots or reports.
+
+All 30 local organization records were copied to Atlas with their BSON IDs and
+dates preserved. Full sorted-document comparisons and matching SHA-256 hashes
+verified the copy, and the local source was unchanged. The Atlas-backed local
+integration suite passed all 14 checks. Then 13 HTTPS exchanges exercised the
+deployed GET modes, successful C.U.D., rejected owners, invalid inputs, and repeat
+deletion. Direct Atlas reads verified insertion, changed text and a later BSON
+`LastModified`, and removal. The same supplied Postman collection passed all
+seven requests and 16 assertions against the public HTTPS origin with Newman.
+All test comments were cleaned up; the original 30 organization records remain
+unchanged. The first deployment started before network access was ready and
+failed; the subsequent deployment was verified as `Live`.
+
+Evidence in the repository:
+
+- `backend/test-results/phase3-atlas-migration.json`: copied documents and hash.
+- `backend/test-results/phase3-atlas-integration.json`: 14 Atlas-backed checks.
+- `backend/test-results/phase3-deployed-verification.json`: actual HTTPS requests
+  and direct database checks for all three mutations.
+- `backend/test-results/phase3-deployed-postman-run.json`: seven real requests,
+  16 passing assertions, no failures.
+- `deployment-evidence/render-live.jpg`: genuine Render dashboard capture.
+
+The Render capture and Newman reports do not replace the required Postman UI
+screenshots. Remaining manual work is to send POST, PUT, and DELETE individually
+in Postman against the deployed origin and capture the views described above.
+For each screenshot, show the full HTTPS URL containing `jrs239`, method, body,
+response status, and JSON response. POST/PUT must include `LastModified`.
+Then submit the repository link, `Phase3` tag, service URL, and images according
+to the instructor's handout. The free Render instance may take time to wake
+after inactivity; allow the request to finish before capturing the result.
 
 Setup references checked against official Render documentation:
 [Node/Express deployment](https://render.com/docs/deploy-node-express-app),
@@ -207,8 +236,10 @@ and [port binding](https://render.com/docs/web-services#port-binding).
 
 ## Git verification
 
-The requested final sequence is commit, push `main`, create annotated `Phase3`,
-and push the tag after tests pass. Verify the remote independently:
+The implementation commit `3aabdba487debf62fbed0a6eeb3c3c1d8d8368f3` and its
+annotated `Phase3` tag were pushed and verified before deployment. That exact
+implementation was deployed and tested. Later commits add deployment evidence
+and instructions on `main`; the published `Phase3` tag is preserved. Verify:
 
 ```powershell
 git status --short
@@ -216,8 +247,10 @@ git log -1 --oneline
 git rev-parse HEAD
 git rev-parse 'Phase3^{}'
 git ls-remote origin refs/heads/main refs/tags/Phase3 'refs/tags/Phase3^{}'
+git diff Phase3 HEAD -- backend/api backend/dao backend/index.js backend/server.js backend/package.json backend/package-lock.json
 ```
 
-The branch SHA and peeled tag SHA must both equal the tested commit. A local tag
-alone does not establish that it was pushed. Do not replace an existing Phase3
-tag without investigating its target. `.env` remains ignored and untracked.
+The remote branch SHA must match local `HEAD`; the peeled tag SHA must match the
+implementation commit above. The runtime-file comparison must be empty, showing
+the deployed implementation is unchanged by the later documentation/evidence
+commit. `.env` and `.env.atlas` remain ignored and untracked.

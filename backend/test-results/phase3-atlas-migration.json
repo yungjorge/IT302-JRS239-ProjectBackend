@@ -1,0 +1,11 @@
+{
+  "verifiedAt": "2026-10-26T21:32:37.079Z",
+  "sourceDatabase": "it302",
+  "targetDatabase": "it302",
+  "collection": "organizations_jrs239",
+  "sourceCount": 30,
+  "targetCount": 30,
+  "documentsIdentical": true,
+  "localSourceUnchanged": true,
+  "sha256": "9468c8f5705b0c4500215014cedf78f480e2834eeb6c6a3e46784b484b51f79e"
+}

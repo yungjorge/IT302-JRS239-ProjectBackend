@@ -1,0 +1,221 @@
+{
+  "baseUrl": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239",
+  "startedAt": "2026-10-26T21:35:33.928Z",
+  "passed": true,
+  "exchanges": [
+    {
+      "method": "GET",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/organizations",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 20
+        },
+        "pageNumber": 0,
+        "itemsPerPage": 20,
+        "filters": {},
+        "totalResults": 30
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/organizations?itemsPerPage=5&pageNumber=0",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 5
+        },
+        "pageNumber": 0,
+        "itemsPerPage": 5,
+        "filters": {},
+        "totalResults": 30
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/organizations?itemsPerPage=5&pageNumber=1",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 5
+        },
+        "pageNumber": 1,
+        "itemsPerPage": 5,
+        "filters": {},
+        "totalResults": 30
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/organizations?itemsPerPage=100",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 30
+        },
+        "pageNumber": 0,
+        "itemsPerPage": 100,
+        "filters": {},
+        "totalResults": 30
+      }
+    },
+    {
+      "method": "GET",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/organizations?login=engineyard",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 1
+        },
+        "pageNumber": 0,
+        "itemsPerPage": 20,
+        "filters": {
+          "login": "engineyard"
+        },
+        "totalResults": 1
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "Good",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-deployed-1786a9db-375f-4690-8f85-1f3a2641ee13"
+      },
+      "status": 400,
+      "response": {
+        "error": "text must contain a meaningful complete sentence: 20-5000 characters, at least three words, ending with . ! or ?"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-deployed-1786a9db-375f-4690-8f85-1f3a2641ee13"
+      },
+      "status": 201,
+      "response": {
+        "status": "success",
+        "message": "Comment created",
+        "comment": {
+          "organizationId": 81,
+          "text": "This organization provides useful resources for learning web development.",
+          "userName": "Jorge Sanchez",
+          "userId": "jrs239-deployed-1786a9db-375f-4690-8f85-1f3a2641ee13",
+          "LastModified": "2026-10-26T21:35:34.748Z",
+          "_id": "6adfc7a6a71f1686b291b9da"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments/6adfc7a6a71f1686b291b9da",
+      "requestBody": {
+        "text": "This organization provides useful resources for learning web development.",
+        "userId": "different-user"
+      },
+      "status": 404,
+      "response": {
+        "error": "Comment not found for this userId"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments/6adfc7a6a71f1686b291b9da",
+      "requestBody": {
+        "userId": "different-user"
+      },
+      "status": 404,
+      "response": {
+        "error": "Comment not found for this userId"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments/6adfc7a6a71f1686b291b9da",
+      "requestBody": {
+        "text": "This organization publishes helpful examples that support my database coursework.",
+        "userId": "jrs239-deployed-1786a9db-375f-4690-8f85-1f3a2641ee13"
+      },
+      "status": 200,
+      "response": {
+        "status": "success",
+        "message": "Comment updated",
+        "comment": {
+          "_id": "6adfc7a6a71f1686b291b9da",
+          "organizationId": 81,
+          "text": "This organization publishes helpful examples that support my database coursework.",
+          "userName": "Jorge Sanchez",
+          "userId": "jrs239-deployed-1786a9db-375f-4690-8f85-1f3a2641ee13",
+          "LastModified": "2026-10-26T21:35:34.986Z"
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments/6adfc7a6a71f1686b291b9da",
+      "requestBody": {
+        "userId": "jrs239-deployed-1786a9db-375f-4690-8f85-1f3a2641ee13"
+      },
+      "status": 200,
+      "response": {
+        "status": "success",
+        "message": "Comment deleted",
+        "deletedId": "6adfc7a6a71f1686b291b9da"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments/6adfc7a6a71f1686b291b9da",
+      "requestBody": {
+        "userId": "jrs239-deployed-1786a9db-375f-4690-8f85-1f3a2641ee13"
+      },
+      "status": 404,
+      "response": {
+        "error": "Comment not found for this userId"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/comments/not-an-id",
+      "requestBody": {
+        "text": "This organization publishes helpful examples that support my database coursework.",
+        "userId": "jrs239-deployed-1786a9db-375f-4690-8f85-1f3a2641ee13"
+      },
+      "status": 400,
+      "response": {
+        "error": "commentId must be a 24-character hexadecimal MongoDB ObjectId"
+      }
+    }
+  ],
+  "databaseChecks": [
+    {
+      "operation": "POST",
+      "commentId": "6adfc7a6a71f1686b291b9da",
+      "documentMatchesResponse": true,
+      "lastModifiedStoredAsBsonDate": true
+    },
+    {
+      "operation": "PUT",
+      "commentId": "6adfc7a6a71f1686b291b9da",
+      "documentMatchesResponse": true,
+      "lastModifiedAdvanced": true
+    },
+    {
+      "operation": "DELETE",
+      "commentId": "6adfc7a6a71f1686b291b9da",
+      "documentAbsent": true
+    }
+  ],
+  "organizationCount": 30,
+  "organizationSha256": "9468c8f5705b0c4500215014cedf78f480e2834eeb6c6a3e46784b484b51f79e",
+  "organizationsUnchanged": true,
+  "preexistingCommentsUnchanged": true,
+  "testCommentsRemaining": 0,
+  "finishedAt": "2026-10-26T21:35:35.661Z"
+}

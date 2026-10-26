@@ -9,7 +9,10 @@ The organization collection and GET routes are preserved.
 See [Phase 3 setup, API, testing, Postman screenshot instructions, and Render setup](PHASE3.md).
 Import [the Phase 3 Postman collection](postman/Phase3-jrs239.postman_collection.json).
 Run `npm test` from `backend` to verify against the real configured MongoDB database.
-Deployment and Phase 3 screenshot capture require the manual steps in that guide.
+Live API: [organizations on Render](https://it302-jrs239-phase3.onrender.com/api/v1/jrs239/organizations).
+POST, PUT, DELETE, and the original GET requests were verified against the deployed
+service and its Atlas database. Import the [Render Postman environment](postman/Phase3-Render-jrs239.postman_environment.json)
+to use the public service. Genuine Phase 3 Postman screenshot capture remains manual.
 
 Name: Jorge Sanchez  
 UCID: jrs239  
