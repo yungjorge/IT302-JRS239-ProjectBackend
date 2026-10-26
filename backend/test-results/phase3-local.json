@@ -1,0 +1,747 @@
+{
+  "startedAt": "2026-10-26T21:13:20.826Z",
+  "database": "it302",
+  "passed": true,
+  "checks": [
+    {
+      "name": "GET default, pagination, all records and filter match direct MongoDB reads",
+      "passed": true
+    },
+    {
+      "name": "GET validation remains intact",
+      "passed": true
+    },
+    {
+      "name": "POST rejects missing, invalid, injected and client timestamp fields",
+      "passed": true
+    },
+    {
+      "name": "POST rejects an organization that does not exist",
+      "passed": true
+    },
+    {
+      "name": "Malformed JSON, non-JSON and oversized bodies return clear errors",
+      "passed": true
+    },
+    {
+      "name": "POST 201 persists a new ObjectId and BSON Date in comments_jrs239",
+      "passed": true
+    },
+    {
+      "name": "Multiple comments may refer to the same unique organization identifier",
+      "passed": true
+    },
+    {
+      "name": "PUT and DELETE reject malformed IDs, missing owners and invalid bodies",
+      "passed": true
+    },
+    {
+      "name": "A different userId cannot update or delete the comment",
+      "passed": true
+    },
+    {
+      "name": "Missing comment IDs return 404",
+      "passed": true
+    },
+    {
+      "name": "PUT 200 changes stored text and refreshes BSON LastModified",
+      "passed": true
+    },
+    {
+      "name": "DELETE 200 removes the document; repeating DELETE returns 404",
+      "passed": true
+    },
+    {
+      "name": "Unknown routes return JSON 404",
+      "passed": true
+    },
+    {
+      "name": "All original organization and comment documents remain unchanged",
+      "passed": true
+    }
+  ],
+  "exchanges": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/organizations",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 20,
+          "contentsMatchedDirectDatabaseRead": true
+        },
+        "pageNumber": 0,
+        "itemsPerPage": 20,
+        "filters": {},
+        "totalResults": 30
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/organizations?itemsPerPage=5&pageNumber=0",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 5,
+          "contentsMatchedDirectDatabaseRead": true
+        },
+        "pageNumber": 0,
+        "itemsPerPage": 5,
+        "filters": {},
+        "totalResults": 30
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/organizations?itemsPerPage=5&pageNumber=1",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 5,
+          "contentsMatchedDirectDatabaseRead": true
+        },
+        "pageNumber": 1,
+        "itemsPerPage": 5,
+        "filters": {},
+        "totalResults": 30
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/organizations?itemsPerPage=100&pageNumber=0",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 30,
+          "contentsMatchedDirectDatabaseRead": true
+        },
+        "pageNumber": 0,
+        "itemsPerPage": 100,
+        "filters": {},
+        "totalResults": 30
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/organizations?login=engineyard",
+      "status": 200,
+      "responseSummary": {
+        "organizations": {
+          "returnedCount": 1,
+          "contentsMatchedDirectDatabaseRead": true
+        },
+        "pageNumber": 0,
+        "itemsPerPage": 20,
+        "filters": {
+          "login": "engineyard"
+        },
+        "totalResults": 1
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/organizations?itemsPerPage=0",
+      "status": 400,
+      "response": {
+        "error": "itemsPerPage must be an integer from 1 to 100; pageNumber must be a nonnegative safe integer with a safe pagination offset"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/organizations?pageNumber=-1",
+      "status": 400,
+      "response": {
+        "error": "itemsPerPage must be an integer from 1 to 100; pageNumber must be a nonnegative safe integer with a safe pagination offset"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/organizations?login=a&login=b",
+      "status": 400,
+      "response": {
+        "error": "login must be a single string of at most 256 characters"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {},
+      "status": 400,
+      "response": {
+        "error": "organizationId must be a positive safe integer from the organizations collection's id field"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": null,
+      "status": 400,
+      "response": {
+        "error": "Malformed JSON body"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": [],
+      "status": 400,
+      "response": {
+        "error": "A JSON object body is required"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": "81",
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "organizationId must be a positive safe integer from the organizations collection's id field"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": -1,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "organizationId must be a positive safe integer from the organizations collection's id field"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 1.5,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "organizationId must be a positive safe integer from the organizations collection's id field"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": {
+          "$ne": null
+        },
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "organizationId must be a positive safe integer from the organizations collection's id field"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "Good.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "text must contain a meaningful complete sentence: 20-5000 characters, at least three words, ending with . ! or ?"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This sentence lacks terminal punctuation",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "text must contain a meaningful complete sentence: 20-5000 characters, at least three words, ending with . ! or ?"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "text must contain a meaningful complete sentence: 20-5000 characters, at least three words, ending with . ! or ?"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": {
+          "$set": "unsafe"
+        },
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "text must be a string"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": " ",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "userName must be a nonempty string of at most 100 characters"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "userName must be a nonempty string of at most 100 characters"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": ""
+      },
+      "status": 400,
+      "response": {
+        "error": "userId must be a nonempty string of at most 128 characters"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "status": 400,
+      "response": {
+        "error": "userId must be a nonempty string of at most 128 characters"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": {
+          "$ne": null
+        }
+      },
+      "status": 400,
+      "response": {
+        "error": "userId must be a nonempty string of at most 128 characters"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+        "LastModified": "2000-01-01"
+      },
+      "status": 400,
+      "response": {
+        "error": "Only these fields are accepted: organizationId, text, userName, userId"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 9007199254740991,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 404,
+      "response": {
+        "error": "Organization not found"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": "{broken",
+      "status": 400,
+      "response": {
+        "error": "Malformed JSON body"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": "hello",
+      "status": 415,
+      "response": {
+        "error": "Content-Type must be application/json"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "omitted": "oversized validation input"
+      },
+      "status": 413,
+      "response": {
+        "error": "JSON body exceeds the 32 KB limit"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "status": 415,
+      "response": {
+        "error": "Content-Type must be application/json"
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "  This organization provides useful resources for learning web development.  ",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 201,
+      "response": {
+        "status": "success",
+        "message": "Comment created",
+        "comment": {
+          "organizationId": 81,
+          "text": "This organization provides useful resources for learning web development.",
+          "userName": "Jorge Sanchez",
+          "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+          "LastModified": "2026-10-26T21:13:21.113Z",
+          "_id": "6adfc271e267c23c0a8a1788"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments",
+      "requestBody": {
+        "organizationId": 81,
+        "text": "This organization provides useful resources for learning web development.",
+        "userName": "Jorge Sanchez",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 201,
+      "response": {
+        "status": "success",
+        "message": "Comment created",
+        "comment": {
+          "organizationId": 81,
+          "text": "This organization provides useful resources for learning web development.",
+          "userName": "Jorge Sanchez",
+          "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+          "LastModified": "2026-10-26T21:13:21.122Z",
+          "_id": "6adfc271e267c23c0a8a1789"
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1789",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 200,
+      "response": {
+        "status": "success",
+        "message": "Comment deleted",
+        "deletedId": "6adfc271e267c23c0a8a1789"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/not-an-id",
+      "requestBody": {
+        "text": "This organization provides useful resources for learning web development.",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "commentId must be a 24-character hexadecimal MongoDB ObjectId"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {},
+      "status": 400,
+      "response": {
+        "error": "text must be a string"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": {
+          "$ne": null
+        }
+      },
+      "status": 400,
+      "response": {
+        "error": "text must be a string"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+        "extra": true
+      },
+      "status": 400,
+      "response": {
+        "error": "Only these fields are accepted: text, userId"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": "hello",
+      "status": 415,
+      "response": {
+        "error": "Content-Type must be application/json"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/not-an-id",
+      "requestBody": {
+        "text": "This organization provides useful resources for learning web development.",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 400,
+      "response": {
+        "error": "commentId must be a 24-character hexadecimal MongoDB ObjectId"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {},
+      "status": 400,
+      "response": {
+        "error": "userId must be a nonempty string of at most 128 characters"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": {
+          "$ne": null
+        }
+      },
+      "status": 400,
+      "response": {
+        "error": "userId must be a nonempty string of at most 128 characters"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+        "extra": true
+      },
+      "status": 400,
+      "response": {
+        "error": "Only these fields are accepted: userId"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": "hello",
+      "status": 415,
+      "response": {
+        "error": "Content-Type must be application/json"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+        "text": "Short."
+      },
+      "status": 400,
+      "response": {
+        "error": "text must contain a meaningful complete sentence: 20-5000 characters, at least three words, ending with . ! or ?"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+        "text": "This organization provides useful resources for learning web development.",
+        "LastModified": "2000-01-01"
+      },
+      "status": 400,
+      "response": {
+        "error": "Only these fields are accepted: text, userId"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c-other",
+        "text": "This organization provides useful resources for learning web development."
+      },
+      "status": 404,
+      "response": {
+        "error": "Comment not found for this userId"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c-other"
+      },
+      "status": 404,
+      "response": {
+        "error": "Comment not found for this userId"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a178a",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+        "text": "This organization provides useful resources for learning web development."
+      },
+      "status": 404,
+      "response": {
+        "error": "Comment not found for this userId"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a178a",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 404,
+      "response": {
+        "error": "Comment not found for this userId"
+      }
+    },
+    {
+      "method": "PUT",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "text": "This organization publishes helpful examples that support my database coursework.",
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 200,
+      "response": {
+        "status": "success",
+        "message": "Comment updated",
+        "comment": {
+          "_id": "6adfc271e267c23c0a8a1788",
+          "organizationId": 81,
+          "text": "This organization publishes helpful examples that support my database coursework.",
+          "userName": "Jorge Sanchez",
+          "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c",
+          "LastModified": "2026-10-26T21:13:21.200Z"
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 200,
+      "response": {
+        "status": "success",
+        "message": "Comment deleted",
+        "deletedId": "6adfc271e267c23c0a8a1788"
+      }
+    },
+    {
+      "method": "DELETE",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/comments/6adfc271e267c23c0a8a1788",
+      "requestBody": {
+        "userId": "jrs239-integration-b3eb3a9e-cfe6-45d7-a8da-2de04e6f1b3c"
+      },
+      "status": 404,
+      "response": {
+        "error": "Comment not found for this userId"
+      }
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:63124/api/v1/jrs239/missing",
+      "status": 404,
+      "response": {
+        "error": "Endpoint not found"
+      }
+    }
+  ],
+  "organizationCountBefore": 30,
+  "organizationHashBefore": "9468c8f5705b0c4500215014cedf78f480e2834eeb6c6a3e46784b484b51f79e",
+  "organizationCountAfter": 30,
+  "organizationHashAfter": "9468c8f5705b0c4500215014cedf78f480e2834eeb6c6a3e46784b484b51f79e",
+  "preexistingCommentsPreserved": true,
+  "testCommentsRemaining": 0,
+  "finishedAt": "2026-10-26T21:13:21.240Z"
+}

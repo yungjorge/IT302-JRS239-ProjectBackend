@@ -1,0 +1,3514 @@
+{
+  "collection": {
+    "item": [
+      {
+        "id": "a03298fc-bac6-462c-a858-e594d53628be",
+        "name": "01 GET an existing organization",
+        "request": {
+          "url": {
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "organizations"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [
+              {
+                "key": "itemsPerPage",
+                "value": "1"
+              },
+              {
+                "key": "pageNumber",
+                "value": "0"
+              }
+            ],
+            "variable": []
+          },
+          "method": "GET"
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "e8b05370-296f-4887-a5b8-2cb9e84d2448",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('GET returns 200', () => pm.response.to.have.status(200));",
+                "const commentResponse = pm.response.json();",
+                "pm.test('An organization is available', () => pm.expect(commentResponse.organizations.length).to.be.above(0));",
+                "if (commentResponse.organizations.length) pm.collectionVariables.set('organizationId', commentResponse.organizations[0].id);"
+              ],
+              "_lastExecutionId": "e6ba3602-d817-493b-87f5-87f54e98c232"
+            }
+          }
+        ]
+      },
+      {
+        "id": "621d2768-b274-48df-a093-d0b44486364f",
+        "name": "02 POST create a comment - screenshot",
+        "request": {
+          "url": {
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"organizationId\": {{organizationId}},\n  \"text\": \"This organization provides useful resources for learning web development.\",\n  \"userName\": \"{{userName}}\",\n  \"userId\": \"{{userId}}\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "c3ad95b7-5618-4cd9-8713-a005e0fb92d6",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('POST returns 201', () => pm.response.to.have.status(201));",
+                "const commentResponse = pm.response.json();",
+                "pm.test('Created comment has a unique ObjectId', () => pm.expect(commentResponse.comment._id).to.match(/^[a-f0-9]{24}$/));",
+                "pm.test('LastModified is a recent server timestamp', () => { pm.expect(Number.isNaN(Date.parse(commentResponse.comment.LastModified))).to.equal(false); pm.expect(Math.abs(Date.now() - Date.parse(commentResponse.comment.LastModified))).to.be.below(300000); });",
+                "pm.test('Organization and owner match', () => { pm.expect(commentResponse.comment.organizationId).to.equal(Number(pm.collectionVariables.get('organizationId'))); pm.expect(commentResponse.comment.userId).to.equal(pm.collectionVariables.get('userId')); });",
+                "pm.collectionVariables.set('commentId', commentResponse.comment._id);",
+                "pm.collectionVariables.set('createdLastModified', commentResponse.comment.LastModified);"
+              ],
+              "_lastExecutionId": "67133d3f-a919-4ff1-85f8-b31d4264dbd4"
+            }
+          }
+        ]
+      },
+      {
+        "id": "012106e2-a599-42e5-9ad4-20bd6ec5b5db",
+        "name": "03 PUT update the same comment - screenshot",
+        "request": {
+          "url": {
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments",
+              "{{commentId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "PUT",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"text\": \"This organization publishes helpful examples that support my database coursework.\",\n  \"userId\": \"{{userId}}\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "3af024cd-6b6c-49cc-83a9-d1d8ec3611e6",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('PUT returns 200', () => pm.response.to.have.status(200));",
+                "const commentResponse = pm.response.json();",
+                "pm.test('The same comment was updated', () => pm.expect(commentResponse.comment._id).to.equal(pm.collectionVariables.get('commentId')));",
+                "pm.test('Text was updated', () => pm.expect(commentResponse.comment.text).to.equal('This organization publishes helpful examples that support my database coursework.'));",
+                "pm.test('LastModified advanced', () => pm.expect(Date.parse(commentResponse.comment.LastModified)).to.be.above(Date.parse(pm.collectionVariables.get('createdLastModified'))));"
+              ],
+              "_lastExecutionId": "9bd2bc6d-c765-47ba-90b6-064d9711ffed"
+            }
+          }
+        ]
+      },
+      {
+        "id": "2ddbc3f9-1aa3-4e99-a036-edd049cc782c",
+        "name": "04 PUT reject a different owner",
+        "request": {
+          "url": {
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments",
+              "{{commentId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "PUT",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"text\": \"A different user must not be allowed to change this comment.\",\n  \"userId\": \"jrs239-other-user\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "49d0e3e2-9fa9-4f60-a50a-b03862830e8c",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Different owner returns 404', () => pm.response.to.have.status(404));",
+                "pm.test('Error is clear JSON', () => pm.expect(pm.response.json().error).to.be.a('string'));"
+              ],
+              "_lastExecutionId": "a3c17dd1-7ac0-4e4b-ac5a-4eafd60467a0"
+            }
+          }
+        ]
+      },
+      {
+        "id": "e0adecf6-8b1e-4ab2-9cf2-591d876526b0",
+        "name": "05 DELETE remove the same comment - screenshot",
+        "request": {
+          "url": {
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments",
+              "{{commentId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "DELETE",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "596a363f-ebca-4b58-a4b9-b6548b58ba40",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('DELETE returns 200', () => pm.response.to.have.status(200));",
+                "pm.test('Deleted ID matches the created comment', () => pm.expect(pm.response.json().deletedId).to.equal(pm.collectionVariables.get('commentId')));"
+              ],
+              "_lastExecutionId": "162f4248-166a-4122-8c97-af04ed77fb6d"
+            }
+          }
+        ]
+      },
+      {
+        "id": "5cc744d0-1a65-422b-9f4d-91f51ccf025a",
+        "name": "06 DELETE again confirms it is gone",
+        "request": {
+          "url": {
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments",
+              "{{commentId}}"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "DELETE",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "252be9af-afed-487f-a7ef-9074bc81e47c",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Deleted comment returns 404', () => pm.response.to.have.status(404));"
+              ],
+              "_lastExecutionId": "55258803-486b-42e6-b8b8-7316bb281ecd"
+            }
+          }
+        ]
+      },
+      {
+        "id": "c8aaa550-26eb-4c6b-885e-6b92fb9d4c8e",
+        "name": "07 POST reject incomplete text",
+        "request": {
+          "url": {
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments"
+            ],
+            "host": [
+              "{{baseUrl}}"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"organizationId\": {{organizationId}},\n  \"text\": \"Good\",\n  \"userName\": \"{{userName}}\",\n  \"userId\": \"{{userId}}\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": [],
+        "event": [
+          {
+            "listen": "test",
+            "script": {
+              "id": "6dd325cc-231e-46ad-8119-892dd53a215b",
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Invalid text returns 400', () => pm.response.to.have.status(400));"
+              ],
+              "_lastExecutionId": "d932544c-05ae-4067-886b-2977e38d7b52"
+            }
+          }
+        ]
+      }
+    ],
+    "event": [],
+    "variable": [
+      {
+        "type": "any",
+        "value": "http://localhost:5000",
+        "key": "baseUrl"
+      },
+      {
+        "type": "any",
+        "value": "81",
+        "key": "organizationId"
+      },
+      {
+        "type": "any",
+        "value": "",
+        "key": "commentId"
+      },
+      {
+        "type": "any",
+        "value": "jrs239",
+        "key": "userId"
+      },
+      {
+        "type": "any",
+        "value": "Jorge Sanchez",
+        "key": "userName"
+      },
+      {
+        "type": "any",
+        "value": "",
+        "key": "createdLastModified"
+      }
+    ],
+    "info": {
+      "_postman_id": "4dd18358-8a58-4378-aa35-d4a61bdccb06",
+      "name": "IT302 Phase 3 C.U.D. - jrs239",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "description": {
+        "content": "Jorge Sanchez | UCID: jrs239 | IT-302 Section 451 | jrs239@njit.edu. Real HTTP requests for comments_jrs239. Run the numbered requests in order. Capture genuine Postman screenshots after sending POST, PUT and DELETE. The supplied userId is an ownership field, not authenticated identity. This collection creates and deletes its own comment only.",
+        "type": "text/plain"
+      }
+    }
+  },
+  "environment": {
+    "id": "bd33730c-4aba-4e09-b85b-c11b94f55190",
+    "values": []
+  },
+  "globals": {
+    "id": "5a42f7e0-f3d7-4259-8abf-54f35b6aae39",
+    "values": []
+  },
+  "run": {
+    "stats": {
+      "iterations": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      },
+      "items": {
+        "total": 7,
+        "pending": 0,
+        "failed": 0
+      },
+      "scripts": {
+        "total": 7,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 7,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 7,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 7,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 16,
+        "pending": 0,
+        "failed": 0
+      },
+      "testScripts": {
+        "total": 7,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequestScripts": {
+        "total": 0,
+        "pending": 0,
+        "failed": 0
+      }
+    },
+    "timings": {
+      "responseAverage": 10.857142857142858,
+      "responseMin": 4,
+      "responseMax": 35,
+      "responseSd": 9.991833400026119,
+      "dnsAverage": 0,
+      "dnsMin": 0,
+      "dnsMax": 0,
+      "dnsSd": 0,
+      "firstByteAverage": 0,
+      "firstByteMin": 0,
+      "firstByteMax": 0,
+      "firstByteSd": 0,
+      "started": 1793049274236,
+      "completed": 1793049275462
+    },
+    "executions": [
+      {
+        "cursor": {
+          "position": 0,
+          "iteration": 0,
+          "length": 7,
+          "cycles": 1,
+          "empty": false,
+          "eof": false,
+          "bof": true,
+          "cr": false,
+          "ref": "e5b188d7-aab1-45c9-bb7a-bef343f06358",
+          "httpRequestId": "bab16f1d-12d4-4880-8a33-ff493bb42532"
+        },
+        "item": {
+          "id": "a03298fc-bac6-462c-a858-e594d53628be",
+          "name": "01 GET an existing organization",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "jrs239",
+                "organizations"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "key": "itemsPerPage",
+                  "value": "1"
+                },
+                {
+                  "key": "pageNumber",
+                  "value": "0"
+                }
+              ],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e8b05370-296f-4887-a5b8-2cb9e84d2448",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('GET returns 200', () => pm.response.to.have.status(200));",
+                  "const commentResponse = pm.response.json();",
+                  "pm.test('An organization is available', () => pm.expect(commentResponse.organizations.length).to.be.above(0));",
+                  "if (commentResponse.organizations.length) pm.collectionVariables.set('organizationId', commentResponse.organizations[0].id);"
+                ],
+                "_lastExecutionId": "e6ba3602-d817-493b-87f5-87f54e98c232"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "organizations"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [
+              {
+                "key": "itemsPerPage",
+                "value": "1"
+              },
+              {
+                "key": "pageNumber",
+                "value": "0"
+              }
+            ],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "cd5b624e-d6dc-40eb-bbe1-01e68661f865",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET"
+        },
+        "response": {
+          "id": "9e100b31-22dc-40e3-b1d4-a56c2f7ad818",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "805"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"325-BY9VeIspcJv7ox72jSqAXMZaLbg\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 26 Oct 2026 21:14:34 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              111,
+              114,
+              103,
+              97,
+              110,
+              105,
+              122,
+              97,
+              116,
+              105,
+              111,
+              110,
+              115,
+              34,
+              58,
+              91,
+              123,
+              34,
+              95,
+              105,
+              100,
+              34,
+              58,
+              34,
+              54,
+              97,
+              98,
+              49,
+              102,
+              53,
+              102,
+              97,
+              99,
+              50,
+              99,
+              100,
+              102,
+              97,
+              48,
+              53,
+              101,
+              57,
+              50,
+              100,
+              102,
+              51,
+              97,
+              53,
+              34,
+              44,
+              34,
+              108,
+              111,
+              103,
+              105,
+              110,
+              34,
+              58,
+              34,
+              101,
+              110,
+              103,
+              105,
+              110,
+              101,
+              121,
+              97,
+              114,
+              100,
+              34,
+              44,
+              34,
+              105,
+              100,
+              34,
+              58,
+              56,
+              49,
+              44,
+              34,
+              110,
+              111,
+              100,
+              101,
+              95,
+              105,
+              100,
+              34,
+              58,
+              34,
+              77,
+              68,
+              69,
+              121,
+              79,
+              107,
+              57,
+              121,
+              90,
+              50,
+              70,
+              117,
+              97,
+              88,
+              112,
+              104,
+              100,
+              71,
+              108,
+              118,
+              98,
+              106,
+              103,
+              120,
+              34,
+              44,
+              34,
+              117,
+              114,
+              108,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              112,
+              105,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              46,
+              99,
+              111,
+              109,
+              47,
+              111,
+              114,
+              103,
+              115,
+              47,
+              101,
+              110,
+              103,
+              105,
+              110,
+              101,
+              121,
+              97,
+              114,
+              100,
+              34,
+              44,
+              34,
+              114,
+              101,
+              112,
+              111,
+              115,
+              95,
+              117,
+              114,
+              108,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              112,
+              105,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              46,
+              99,
+              111,
+              109,
+              47,
+              111,
+              114,
+              103,
+              115,
+              47,
+              101,
+              110,
+              103,
+              105,
+              110,
+              101,
+              121,
+              97,
+              114,
+              100,
+              47,
+              114,
+              101,
+              112,
+              111,
+              115,
+              34,
+              44,
+              34,
+              101,
+              118,
+              101,
+              110,
+              116,
+              115,
+              95,
+              117,
+              114,
+              108,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              112,
+              105,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              46,
+              99,
+              111,
+              109,
+              47,
+              111,
+              114,
+              103,
+              115,
+              47,
+              101,
+              110,
+              103,
+              105,
+              110,
+              101,
+              121,
+              97,
+              114,
+              100,
+              47,
+              101,
+              118,
+              101,
+              110,
+              116,
+              115,
+              34,
+              44,
+              34,
+              104,
+              111,
+              111,
+              107,
+              115,
+              95,
+              117,
+              114,
+              108,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              112,
+              105,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              46,
+              99,
+              111,
+              109,
+              47,
+              111,
+              114,
+              103,
+              115,
+              47,
+              101,
+              110,
+              103,
+              105,
+              110,
+              101,
+              121,
+              97,
+              114,
+              100,
+              47,
+              104,
+              111,
+              111,
+              107,
+              115,
+              34,
+              44,
+              34,
+              105,
+              115,
+              115,
+              117,
+              101,
+              115,
+              95,
+              117,
+              114,
+              108,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              112,
+              105,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              46,
+              99,
+              111,
+              109,
+              47,
+              111,
+              114,
+              103,
+              115,
+              47,
+              101,
+              110,
+              103,
+              105,
+              110,
+              101,
+              121,
+              97,
+              114,
+              100,
+              47,
+              105,
+              115,
+              115,
+              117,
+              101,
+              115,
+              34,
+              44,
+              34,
+              109,
+              101,
+              109,
+              98,
+              101,
+              114,
+              115,
+              95,
+              117,
+              114,
+              108,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              112,
+              105,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              46,
+              99,
+              111,
+              109,
+              47,
+              111,
+              114,
+              103,
+              115,
+              47,
+              101,
+              110,
+              103,
+              105,
+              110,
+              101,
+              121,
+              97,
+              114,
+              100,
+              47,
+              109,
+              101,
+              109,
+              98,
+              101,
+              114,
+              115,
+              123,
+              47,
+              109,
+              101,
+              109,
+              98,
+              101,
+              114,
+              125,
+              34,
+              44,
+              34,
+              112,
+              117,
+              98,
+              108,
+              105,
+              99,
+              95,
+              109,
+              101,
+              109,
+              98,
+              101,
+              114,
+              115,
+              95,
+              117,
+              114,
+              108,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              112,
+              105,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              46,
+              99,
+              111,
+              109,
+              47,
+              111,
+              114,
+              103,
+              115,
+              47,
+              101,
+              110,
+              103,
+              105,
+              110,
+              101,
+              121,
+              97,
+              114,
+              100,
+              47,
+              112,
+              117,
+              98,
+              108,
+              105,
+              99,
+              95,
+              109,
+              101,
+              109,
+              98,
+              101,
+              114,
+              115,
+              123,
+              47,
+              109,
+              101,
+              109,
+              98,
+              101,
+              114,
+              125,
+              34,
+              44,
+              34,
+              97,
+              118,
+              97,
+              116,
+              97,
+              114,
+              95,
+              117,
+              114,
+              108,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              118,
+              97,
+              116,
+              97,
+              114,
+              115,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              117,
+              115,
+              101,
+              114,
+              99,
+              111,
+              110,
+              116,
+              101,
+              110,
+              116,
+              46,
+              99,
+              111,
+              109,
+              47,
+              117,
+              47,
+              56,
+              49,
+              63,
+              118,
+              61,
+              52,
+              34,
+              44,
+              34,
+              100,
+              101,
+              115,
+              99,
+              114,
+              105,
+              112,
+              116,
+              105,
+              111,
+              110,
+              34,
+              58,
+              34,
+              34,
+              44,
+              34,
+              105,
+              109,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              104,
+              116,
+              116,
+              112,
+              115,
+              58,
+              47,
+              47,
+              97,
+              118,
+              97,
+              116,
+              97,
+              114,
+              115,
+              46,
+              103,
+              105,
+              116,
+              104,
+              117,
+              98,
+              117,
+              115,
+              101,
+              114,
+              99,
+              111,
+              110,
+              116,
+              101,
+              110,
+              116,
+              46,
+              99,
+              111,
+              109,
+              47,
+              117,
+              47,
+              56,
+              49,
+              63,
+              118,
+              61,
+              52,
+              34,
+              44,
+              34,
+              108,
+              97,
+              115,
+              116,
+              85,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              48,
+              57,
+              45,
+              50,
+              50,
+              84,
+              48,
+              51,
+              58,
+              51,
+              48,
+              58,
+              50,
+              54,
+              46,
+              49,
+              57,
+              55,
+              90,
+              34,
+              125,
+              93,
+              44,
+              34,
+              112,
+              97,
+              103,
+              101,
+              78,
+              117,
+              109,
+              98,
+              101,
+              114,
+              34,
+              58,
+              48,
+              44,
+              34,
+              105,
+              116,
+              101,
+              109,
+              115,
+              80,
+              101,
+              114,
+              80,
+              97,
+              103,
+              101,
+              34,
+              58,
+              49,
+              44,
+              34,
+              102,
+              105,
+              108,
+              116,
+              101,
+              114,
+              115,
+              34,
+              58,
+              123,
+              125,
+              44,
+              34,
+              116,
+              111,
+              116,
+              97,
+              108,
+              82,
+              101,
+              115,
+              117,
+              108,
+              116,
+              115,
+              34,
+              58,
+              51,
+              48,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 35,
+          "responseSize": 805
+        },
+        "id": "a03298fc-bac6-462c-a858-e594d53628be",
+        "assertions": [
+          {
+            "assertion": "GET returns 200",
+            "skipped": false
+          },
+          {
+            "assertion": "An organization is available",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "696b8832-f8a7-4d5c-97aa-ba38d5d22475",
+          "length": 7,
+          "cycles": 1,
+          "position": 1,
+          "iteration": 0,
+          "httpRequestId": "9cec45f6-ee2b-4a21-b6a2-2e36b5d329b6"
+        },
+        "item": {
+          "id": "621d2768-b274-48df-a093-d0b44486364f",
+          "name": "02 POST create a comment - screenshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "jrs239",
+                "comments"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationId\": {{organizationId}},\n  \"text\": \"This organization provides useful resources for learning web development.\",\n  \"userName\": \"{{userName}}\",\n  \"userId\": \"{{userId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "c3ad95b7-5618-4cd9-8713-a005e0fb92d6",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('POST returns 201', () => pm.response.to.have.status(201));",
+                  "const commentResponse = pm.response.json();",
+                  "pm.test('Created comment has a unique ObjectId', () => pm.expect(commentResponse.comment._id).to.match(/^[a-f0-9]{24}$/));",
+                  "pm.test('LastModified is a recent server timestamp', () => { pm.expect(Number.isNaN(Date.parse(commentResponse.comment.LastModified))).to.equal(false); pm.expect(Math.abs(Date.now() - Date.parse(commentResponse.comment.LastModified))).to.be.below(300000); });",
+                  "pm.test('Organization and owner match', () => { pm.expect(commentResponse.comment.organizationId).to.equal(Number(pm.collectionVariables.get('organizationId'))); pm.expect(commentResponse.comment.userId).to.equal(pm.collectionVariables.get('userId')); });",
+                  "pm.collectionVariables.set('commentId', commentResponse.comment._id);",
+                  "pm.collectionVariables.set('createdLastModified', commentResponse.comment.LastModified);"
+                ],
+                "_lastExecutionId": "67133d3f-a919-4ff1-85f8-b31d4264dbd4"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "fea6fd25-0d03-42ac-9716-d86fab0c267c",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "166",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"organizationId\": 81,\n  \"text\": \"This organization provides useful resources for learning web development.\",\n  \"userName\": \"Jorge Sanchez\",\n  \"userId\": \"jrs239\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "2ee89017-7aa1-4fd5-97e9-1db7091d9b50",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "283"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"11b-DJMdSxldzyaooeJ0mvko9lnkHX0\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 26 Oct 2026 21:14:34 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              115,
+              116,
+              97,
+              116,
+              117,
+              115,
+              34,
+              58,
+              34,
+              115,
+              117,
+              99,
+              99,
+              101,
+              115,
+              115,
+              34,
+              44,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              67,
+              111,
+              109,
+              109,
+              101,
+              110,
+              116,
+              32,
+              99,
+              114,
+              101,
+              97,
+              116,
+              101,
+              100,
+              34,
+              44,
+              34,
+              99,
+              111,
+              109,
+              109,
+              101,
+              110,
+              116,
+              34,
+              58,
+              123,
+              34,
+              111,
+              114,
+              103,
+              97,
+              110,
+              105,
+              122,
+              97,
+              116,
+              105,
+              111,
+              110,
+              73,
+              100,
+              34,
+              58,
+              56,
+              49,
+              44,
+              34,
+              116,
+              101,
+              120,
+              116,
+              34,
+              58,
+              34,
+              84,
+              104,
+              105,
+              115,
+              32,
+              111,
+              114,
+              103,
+              97,
+              110,
+              105,
+              122,
+              97,
+              116,
+              105,
+              111,
+              110,
+              32,
+              112,
+              114,
+              111,
+              118,
+              105,
+              100,
+              101,
+              115,
+              32,
+              117,
+              115,
+              101,
+              102,
+              117,
+              108,
+              32,
+              114,
+              101,
+              115,
+              111,
+              117,
+              114,
+              99,
+              101,
+              115,
+              32,
+              102,
+              111,
+              114,
+              32,
+              108,
+              101,
+              97,
+              114,
+              110,
+              105,
+              110,
+              103,
+              32,
+              119,
+              101,
+              98,
+              32,
+              100,
+              101,
+              118,
+              101,
+              108,
+              111,
+              112,
+              109,
+              101,
+              110,
+              116,
+              46,
+              34,
+              44,
+              34,
+              117,
+              115,
+              101,
+              114,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              74,
+              111,
+              114,
+              103,
+              101,
+              32,
+              83,
+              97,
+              110,
+              99,
+              104,
+              101,
+              122,
+              34,
+              44,
+              34,
+              117,
+              115,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              106,
+              114,
+              115,
+              50,
+              51,
+              57,
+              34,
+              44,
+              34,
+              76,
+              97,
+              115,
+              116,
+              77,
+              111,
+              100,
+              105,
+              102,
+              105,
+              101,
+              100,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              54,
+              84,
+              50,
+              49,
+              58,
+              49,
+              52,
+              58,
+              51,
+              52,
+              46,
+              53,
+              55,
+              50,
+              90,
+              34,
+              44,
+              34,
+              95,
+              105,
+              100,
+              34,
+              58,
+              34,
+              54,
+              97,
+              100,
+              102,
+              99,
+              50,
+              98,
+              97,
+              57,
+              50,
+              51,
+              100,
+              51,
+              56,
+              102,
+              49,
+              101,
+              101,
+              55,
+              48,
+              51,
+              99,
+              57,
+              98,
+              34,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 10,
+          "responseSize": 283
+        },
+        "id": "621d2768-b274-48df-a093-d0b44486364f",
+        "assertions": [
+          {
+            "assertion": "POST returns 201",
+            "skipped": false
+          },
+          {
+            "assertion": "Created comment has a unique ObjectId",
+            "skipped": false
+          },
+          {
+            "assertion": "LastModified is a recent server timestamp",
+            "skipped": false
+          },
+          {
+            "assertion": "Organization and owner match",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "aaabb165-04e9-41b2-b92b-a9a90452c63f",
+          "length": 7,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "2e3706a1-de96-4da4-8190-835984806ce2"
+        },
+        "item": {
+          "id": "012106e2-a599-42e5-9ad4-20bd6ec5b5db",
+          "name": "03 PUT update the same comment - screenshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "jrs239",
+                "comments",
+                "{{commentId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"This organization publishes helpful examples that support my database coursework.\",\n  \"userId\": \"{{userId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "3af024cd-6b6c-49cc-83a9-d1d8ec3611e6",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('PUT returns 200', () => pm.response.to.have.status(200));",
+                  "const commentResponse = pm.response.json();",
+                  "pm.test('The same comment was updated', () => pm.expect(commentResponse.comment._id).to.equal(pm.collectionVariables.get('commentId')));",
+                  "pm.test('Text was updated', () => pm.expect(commentResponse.comment.text).to.equal('This organization publishes helpful examples that support my database coursework.'));",
+                  "pm.test('LastModified advanced', () => pm.expect(Date.parse(commentResponse.comment.LastModified)).to.be.above(Date.parse(pm.collectionVariables.get('createdLastModified'))));"
+                ],
+                "_lastExecutionId": "9bd2bc6d-c765-47ba-90b6-064d9711ffed"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments",
+              "6adfc2ba923d38f1ee703c9b"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "b88dbb02-6ce1-48de-9c71-7af40f9b8ae4",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "119",
+              "system": true
+            }
+          ],
+          "method": "PUT",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"text\": \"This organization publishes helpful examples that support my database coursework.\",\n  \"userId\": \"jrs239\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "172059cd-820d-413b-aa65-b36306c8f1a9",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "291"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"123-oMwI0qlDgwM+zVoTp0gtL5/+Ou0\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 26 Oct 2026 21:14:34 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              115,
+              116,
+              97,
+              116,
+              117,
+              115,
+              34,
+              58,
+              34,
+              115,
+              117,
+              99,
+              99,
+              101,
+              115,
+              115,
+              34,
+              44,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              67,
+              111,
+              109,
+              109,
+              101,
+              110,
+              116,
+              32,
+              117,
+              112,
+              100,
+              97,
+              116,
+              101,
+              100,
+              34,
+              44,
+              34,
+              99,
+              111,
+              109,
+              109,
+              101,
+              110,
+              116,
+              34,
+              58,
+              123,
+              34,
+              95,
+              105,
+              100,
+              34,
+              58,
+              34,
+              54,
+              97,
+              100,
+              102,
+              99,
+              50,
+              98,
+              97,
+              57,
+              50,
+              51,
+              100,
+              51,
+              56,
+              102,
+              49,
+              101,
+              101,
+              55,
+              48,
+              51,
+              99,
+              57,
+              98,
+              34,
+              44,
+              34,
+              111,
+              114,
+              103,
+              97,
+              110,
+              105,
+              122,
+              97,
+              116,
+              105,
+              111,
+              110,
+              73,
+              100,
+              34,
+              58,
+              56,
+              49,
+              44,
+              34,
+              116,
+              101,
+              120,
+              116,
+              34,
+              58,
+              34,
+              84,
+              104,
+              105,
+              115,
+              32,
+              111,
+              114,
+              103,
+              97,
+              110,
+              105,
+              122,
+              97,
+              116,
+              105,
+              111,
+              110,
+              32,
+              112,
+              117,
+              98,
+              108,
+              105,
+              115,
+              104,
+              101,
+              115,
+              32,
+              104,
+              101,
+              108,
+              112,
+              102,
+              117,
+              108,
+              32,
+              101,
+              120,
+              97,
+              109,
+              112,
+              108,
+              101,
+              115,
+              32,
+              116,
+              104,
+              97,
+              116,
+              32,
+              115,
+              117,
+              112,
+              112,
+              111,
+              114,
+              116,
+              32,
+              109,
+              121,
+              32,
+              100,
+              97,
+              116,
+              97,
+              98,
+              97,
+              115,
+              101,
+              32,
+              99,
+              111,
+              117,
+              114,
+              115,
+              101,
+              119,
+              111,
+              114,
+              107,
+              46,
+              34,
+              44,
+              34,
+              117,
+              115,
+              101,
+              114,
+              78,
+              97,
+              109,
+              101,
+              34,
+              58,
+              34,
+              74,
+              111,
+              114,
+              103,
+              101,
+              32,
+              83,
+              97,
+              110,
+              99,
+              104,
+              101,
+              122,
+              34,
+              44,
+              34,
+              117,
+              115,
+              101,
+              114,
+              73,
+              100,
+              34,
+              58,
+              34,
+              106,
+              114,
+              115,
+              50,
+              51,
+              57,
+              34,
+              44,
+              34,
+              76,
+              97,
+              115,
+              116,
+              77,
+              111,
+              100,
+              105,
+              102,
+              105,
+              101,
+              100,
+              34,
+              58,
+              34,
+              50,
+              48,
+              50,
+              54,
+              45,
+              49,
+              48,
+              45,
+              50,
+              54,
+              84,
+              50,
+              49,
+              58,
+              49,
+              52,
+              58,
+              51,
+              52,
+              46,
+              55,
+              53,
+              50,
+              90,
+              34,
+              125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 7,
+          "responseSize": 291
+        },
+        "id": "012106e2-a599-42e5-9ad4-20bd6ec5b5db",
+        "assertions": [
+          {
+            "assertion": "PUT returns 200",
+            "skipped": false
+          },
+          {
+            "assertion": "The same comment was updated",
+            "skipped": false
+          },
+          {
+            "assertion": "Text was updated",
+            "skipped": false
+          },
+          {
+            "assertion": "LastModified advanced",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "9181ede6-104e-468a-9f65-047c6b8597a4",
+          "length": 7,
+          "cycles": 1,
+          "position": 3,
+          "iteration": 0,
+          "httpRequestId": "3b0d6b1a-435e-477a-88ed-5905ad977343"
+        },
+        "item": {
+          "id": "2ddbc3f9-1aa3-4e99-a036-edd049cc782c",
+          "name": "04 PUT reject a different owner",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "jrs239",
+                "comments",
+                "{{commentId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"A different user must not be allowed to change this comment.\",\n  \"userId\": \"jrs239-other-user\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "49d0e3e2-9fa9-4f60-a50a-b03862830e8c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Different owner returns 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Error is clear JSON', () => pm.expect(pm.response.json().error).to.be.a('string'));"
+                ],
+                "_lastExecutionId": "a3c17dd1-7ac0-4e4b-ac5a-4eafd60467a0"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments",
+              "6adfc2ba923d38f1ee703c9b"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "41a29475-1193-4143-9717-dc6af41eacf1",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "109",
+              "system": true
+            }
+          ],
+          "method": "PUT",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"text\": \"A different user must not be allowed to change this comment.\",\n  \"userId\": \"jrs239-other-user\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "22254a7a-bbc6-472e-ba8a-b0f9c19cb074",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "45"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"2d-BsiBySfrM73bdHqqkIAW9EnM1xo\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 26 Oct 2026 21:14:34 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              101,
+              114,
+              114,
+              111,
+              114,
+              34,
+              58,
+              34,
+              67,
+              111,
+              109,
+              109,
+              101,
+              110,
+              116,
+              32,
+              110,
+              111,
+              116,
+              32,
+              102,
+              111,
+              117,
+              110,
+              100,
+              32,
+              102,
+              111,
+              114,
+              32,
+              116,
+              104,
+              105,
+              115,
+              32,
+              117,
+              115,
+              101,
+              114,
+              73,
+              100,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 7,
+          "responseSize": 45
+        },
+        "id": "2ddbc3f9-1aa3-4e99-a036-edd049cc782c",
+        "assertions": [
+          {
+            "assertion": "Different owner returns 404",
+            "skipped": false
+          },
+          {
+            "assertion": "Error is clear JSON",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "0862af67-30d5-4250-ad5d-01001f4dbfc1",
+          "length": 7,
+          "cycles": 1,
+          "position": 4,
+          "iteration": 0,
+          "httpRequestId": "1c87ab21-4813-4ed0-8121-8b9a2bb9235f"
+        },
+        "item": {
+          "id": "e0adecf6-8b1e-4ab2-9cf2-591d876526b0",
+          "name": "05 DELETE remove the same comment - screenshot",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "jrs239",
+                "comments",
+                "{{commentId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "596a363f-ebca-4b58-a4b9-b6548b58ba40",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('DELETE returns 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Deleted ID matches the created comment', () => pm.expect(pm.response.json().deletedId).to.equal(pm.collectionVariables.get('commentId')));"
+                ],
+                "_lastExecutionId": "162f4248-166a-4122-8c97-af04ed77fb6d"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments",
+              "6adfc2ba923d38f1ee703c9b"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "18dedcfb-7396-43f3-afb8-17320877bf50",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "24",
+              "system": true
+            }
+          ],
+          "method": "DELETE",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"userId\": \"jrs239\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "440c414f-93cd-44c0-ac13-2b33739eb924",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "87"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"57-nsO6Z/Eeju2WP6lEbFvejmzN/8g\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 26 Oct 2026 21:14:35 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              115,
+              116,
+              97,
+              116,
+              117,
+              115,
+              34,
+              58,
+              34,
+              115,
+              117,
+              99,
+              99,
+              101,
+              115,
+              115,
+              34,
+              44,
+              34,
+              109,
+              101,
+              115,
+              115,
+              97,
+              103,
+              101,
+              34,
+              58,
+              34,
+              67,
+              111,
+              109,
+              109,
+              101,
+              110,
+              116,
+              32,
+              100,
+              101,
+              108,
+              101,
+              116,
+              101,
+              100,
+              34,
+              44,
+              34,
+              100,
+              101,
+              108,
+              101,
+              116,
+              101,
+              100,
+              73,
+              100,
+              34,
+              58,
+              34,
+              54,
+              97,
+              100,
+              102,
+              99,
+              50,
+              98,
+              97,
+              57,
+              50,
+              51,
+              100,
+              51,
+              56,
+              102,
+              49,
+              101,
+              101,
+              55,
+              48,
+              51,
+              99,
+              57,
+              98,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 7,
+          "responseSize": 87
+        },
+        "id": "e0adecf6-8b1e-4ab2-9cf2-591d876526b0",
+        "assertions": [
+          {
+            "assertion": "DELETE returns 200",
+            "skipped": false
+          },
+          {
+            "assertion": "Deleted ID matches the created comment",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "3774ac25-16a3-4abb-a90c-b528e484b6fc",
+          "length": 7,
+          "cycles": 1,
+          "position": 5,
+          "iteration": 0,
+          "httpRequestId": "defe245d-cca4-4d68-a284-2aae2cfe563a"
+        },
+        "item": {
+          "id": "5cc744d0-1a65-422b-9f4d-91f51ccf025a",
+          "name": "06 DELETE again confirms it is gone",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "jrs239",
+                "comments",
+                "{{commentId}}"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "DELETE",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "252be9af-afed-487f-a7ef-9074bc81e47c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Deleted comment returns 404', () => pm.response.to.have.status(404));"
+                ],
+                "_lastExecutionId": "55258803-486b-42e6-b8b8-7316bb281ecd"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments",
+              "6adfc2ba923d38f1ee703c9b"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "93d94c32-da7a-4765-865b-ecb57d057f1b",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "24",
+              "system": true
+            }
+          ],
+          "method": "DELETE",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"userId\": \"jrs239\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "8b242f5d-499b-4e1d-81b4-f0dfee5c6a3a",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "45"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"2d-BsiBySfrM73bdHqqkIAW9EnM1xo\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 26 Oct 2026 21:14:35 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              101,
+              114,
+              114,
+              111,
+              114,
+              34,
+              58,
+              34,
+              67,
+              111,
+              109,
+              109,
+              101,
+              110,
+              116,
+              32,
+              110,
+              111,
+              116,
+              32,
+              102,
+              111,
+              117,
+              110,
+              100,
+              32,
+              102,
+              111,
+              114,
+              32,
+              116,
+              104,
+              105,
+              115,
+              32,
+              117,
+              115,
+              101,
+              114,
+              73,
+              100,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 6,
+          "responseSize": 45
+        },
+        "id": "5cc744d0-1a65-422b-9f4d-91f51ccf025a",
+        "assertions": [
+          {
+            "assertion": "Deleted comment returns 404",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "10886705-e9de-4e86-b275-f90a49528c04",
+          "length": 7,
+          "cycles": 1,
+          "position": 6,
+          "iteration": 0,
+          "httpRequestId": "bfb27565-7fd3-42a5-bdd5-9121c854a8e4"
+        },
+        "item": {
+          "id": "c8aaa550-26eb-4c6b-885e-6b92fb9d4c8e",
+          "name": "07 POST reject incomplete text",
+          "request": {
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "jrs239",
+                "comments"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationId\": {{organizationId}},\n  \"text\": \"Good\",\n  \"userName\": \"{{userName}}\",\n  \"userId\": \"{{userId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "6dd325cc-231e-46ad-8119-892dd53a215b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Invalid text returns 400', () => pm.response.to.have.status(400));"
+                ],
+                "_lastExecutionId": "d932544c-05ae-4067-886b-2977e38d7b52"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "5000",
+            "path": [
+              "api",
+              "v1",
+              "jrs239",
+              "comments"
+            ],
+            "host": [
+              "localhost"
+            ],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "093abb09-3dcd-4549-93f8-74e0315c7ef9",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:5000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "97",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"organizationId\": 81,\n  \"text\": \"Good\",\n  \"userName\": \"Jorge Sanchez\",\n  \"userId\": \"jrs239\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          }
+        },
+        "response": {
+          "id": "1558e28f-de93-4614-acd3-0bbbee127e1c",
+          "status": "Bad Request",
+          "code": 400,
+          "header": [
+            {
+              "key": "X-Powered-By",
+              "value": "Express"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "124"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"7c-QmnL6lHDQAnyZCC7vDHcVG5a+qM\""
+            },
+            {
+              "key": "Date",
+              "value": "Mon, 26 Oct 2026 21:14:35 GMT"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123,
+              34,
+              101,
+              114,
+              114,
+              111,
+              114,
+              34,
+              58,
+              34,
+              116,
+              101,
+              120,
+              116,
+              32,
+              109,
+              117,
+              115,
+              116,
+              32,
+              99,
+              111,
+              110,
+              116,
+              97,
+              105,
+              110,
+              32,
+              97,
+              32,
+              109,
+              101,
+              97,
+              110,
+              105,
+              110,
+              103,
+              102,
+              117,
+              108,
+              32,
+              99,
+              111,
+              109,
+              112,
+              108,
+              101,
+              116,
+              101,
+              32,
+              115,
+              101,
+              110,
+              116,
+              101,
+              110,
+              99,
+              101,
+              58,
+              32,
+              50,
+              48,
+              45,
+              53,
+              48,
+              48,
+              48,
+              32,
+              99,
+              104,
+              97,
+              114,
+              97,
+              99,
+              116,
+              101,
+              114,
+              115,
+              44,
+              32,
+              97,
+              116,
+              32,
+              108,
+              101,
+              97,
+              115,
+              116,
+              32,
+              116,
+              104,
+              114,
+              101,
+              101,
+              32,
+              119,
+              111,
+              114,
+              100,
+              115,
+              44,
+              32,
+              101,
+              110,
+              100,
+              105,
+              110,
+              103,
+              32,
+              119,
+              105,
+              116,
+              104,
+              32,
+              46,
+              32,
+              33,
+              32,
+              111,
+              114,
+              32,
+              63,
+              34,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 4,
+          "responseSize": 124
+        },
+        "id": "c8aaa550-26eb-4c6b-885e-6b92fb9d4c8e",
+        "assertions": [
+          {
+            "assertion": "Invalid text returns 400",
+            "skipped": false
+          }
+        ]
+      }
+    ],
+    "transfers": {
+      "responseTotal": 1680
+    },
+    "failures": [],
+    "error": null
+  }
+}

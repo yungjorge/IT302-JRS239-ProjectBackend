@@ -1,19 +1,23 @@
 /**
  * Jorge Sanchez | UCID: jrs239 | IT-302 | Section: 451
  * Email: jrs239@njit.edu
- * Assignment: Phase 2 Read MongoDB Data using Node.js
+ * Assignment: Phases 2 and 3 MongoDB
  */
 import dotenv from "dotenv";
 import { fileURLToPath } from "node:url";
 import { MongoClient } from "mongodb";
 import app from "./server.js";
 import OrganizationsDAO from "./dao/organizationsDAO.js";
+import CommentsDAO from "./dao/commentsDAO.js";
 
 dotenv.config({ path: fileURLToPath(new URL("./.env", import.meta.url)) });
 
 async function main() {
   for (const key of ["MONGODB_URI", "MONGODB_DATABASE", "MONGODB_COLLECTION"]) {
     if (!process.env[key]?.trim()) throw new Error(`Missing ${key} in backend/.env`);
+  }
+  if (process.env.MONGODB_COLLECTION !== "organizations_jrs239") {
+    throw new Error("MONGODB_COLLECTION must remain organizations_jrs239");
   }
   const port = Number(process.env.PORT || 5000);
   if (!Number.isInteger(port) || port < 1 || port > 65535) {
@@ -23,8 +27,10 @@ async function main() {
   try {
     await client.connect();
     await OrganizationsDAO.injectDB(client, process.env.MONGODB_DATABASE, process.env.MONGODB_COLLECTION);
-    const server = app.listen(port, "127.0.0.1", () => {
+    await CommentsDAO.injectDB(client, process.env.MONGODB_DATABASE);
+    const server = app.listen(port, "0.0.0.0", () => {
       console.log(`Organizations API: http://localhost:${port}/api/v1/jrs239/organizations`);
+      console.log(`Comments API: http://localhost:${port}/api/v1/jrs239/comments`);
     });
     server.on("error", async () => {
       console.error("HTTP server could not start. Check whether PORT is already in use.");

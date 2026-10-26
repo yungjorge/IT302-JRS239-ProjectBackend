@@ -1,11 +1,16 @@
 /**
  * Jorge Sanchez | UCID: jrs239 | IT-302 | Section: 451
  * Email: jrs239@njit.edu
- * Assignment: Phase 2 Read MongoDB Data using Node.js
+ * Assignment: Phases 2 and 3 MongoDB
  */
 let organizationsCollection;
 
 export default class OrganizationsDAO {
+  static async organizationExists(organizationId) {
+    if (!organizationsCollection) throw new Error("Organizations DAO has not been initialized");
+    return Boolean(await organizationsCollection.findOne({ id: organizationId }, { projection: { _id: 1 } }));
+  }
+
   static async injectDB(client, databaseName, collectionName) {
     const database = client.db(databaseName);
     const existing = await database.listCollections({ name: collectionName }, { nameOnly: true }).toArray();

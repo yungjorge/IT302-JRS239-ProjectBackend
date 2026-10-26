@@ -1,0 +1,98 @@
+{
+  "info": {
+    "name": "IT302 Phase 3 C.U.D. - jrs239",
+    "description": "Jorge Sanchez | UCID: jrs239 | IT-302 Section 451 | jrs239@njit.edu. Real HTTP requests for comments_jrs239. Run the numbered requests in order. Capture genuine Postman screenshots after sending POST, PUT and DELETE. The supplied userId is an ownership field, not authenticated identity. This collection creates and deletes its own comment only.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "organizationId", "value": "81" },
+    { "key": "commentId", "value": "" },
+    { "key": "userId", "value": "jrs239" },
+    { "key": "userName", "value": "Jorge Sanchez" },
+    { "key": "createdLastModified", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 GET an existing organization",
+      "request": { "method": "GET", "header": [], "url": "{{baseUrl}}/api/v1/jrs239/organizations?itemsPerPage=1&pageNumber=0" },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('GET returns 200', () => pm.response.to.have.status(200));",
+        "const commentResponse = pm.response.json();",
+        "pm.test('An organization is available', () => pm.expect(commentResponse.organizations.length).to.be.above(0));",
+        "if (commentResponse.organizations.length) pm.collectionVariables.set('organizationId', commentResponse.organizations[0].id);"
+      ] } }]
+    },
+    {
+      "name": "02 POST create a comment - screenshot",
+      "request": {
+        "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/jrs239/comments",
+        "body": { "mode": "raw", "raw": "{\n  \"organizationId\": {{organizationId}},\n  \"text\": \"This organization provides useful resources for learning web development.\",\n  \"userName\": \"{{userName}}\",\n  \"userId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('POST returns 201', () => pm.response.to.have.status(201));",
+        "const commentResponse = pm.response.json();",
+        "pm.test('Created comment has a unique ObjectId', () => pm.expect(commentResponse.comment._id).to.match(/^[a-f0-9]{24}$/));",
+        "pm.test('LastModified is a recent server timestamp', () => { pm.expect(Number.isNaN(Date.parse(commentResponse.comment.LastModified))).to.equal(false); pm.expect(Math.abs(Date.now() - Date.parse(commentResponse.comment.LastModified))).to.be.below(300000); });",
+        "pm.test('Organization and owner match', () => { pm.expect(commentResponse.comment.organizationId).to.equal(Number(pm.collectionVariables.get('organizationId'))); pm.expect(commentResponse.comment.userId).to.equal(pm.collectionVariables.get('userId')); });",
+        "pm.collectionVariables.set('commentId', commentResponse.comment._id);",
+        "pm.collectionVariables.set('createdLastModified', commentResponse.comment.LastModified);"
+      ] } }]
+    },
+    {
+      "name": "03 PUT update the same comment - screenshot",
+      "request": {
+        "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/jrs239/comments/{{commentId}}",
+        "body": { "mode": "raw", "raw": "{\n  \"text\": \"This organization publishes helpful examples that support my database coursework.\",\n  \"userId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('PUT returns 200', () => pm.response.to.have.status(200));",
+        "const commentResponse = pm.response.json();",
+        "pm.test('The same comment was updated', () => pm.expect(commentResponse.comment._id).to.equal(pm.collectionVariables.get('commentId')));",
+        "pm.test('Text was updated', () => pm.expect(commentResponse.comment.text).to.equal('This organization publishes helpful examples that support my database coursework.'));",
+        "pm.test('LastModified advanced', () => pm.expect(Date.parse(commentResponse.comment.LastModified)).to.be.above(Date.parse(pm.collectionVariables.get('createdLastModified'))));"
+      ] } }]
+    },
+    {
+      "name": "04 PUT reject a different owner",
+      "request": {
+        "method": "PUT", "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/jrs239/comments/{{commentId}}",
+        "body": { "mode": "raw", "raw": "{\n  \"text\": \"A different user must not be allowed to change this comment.\",\n  \"userId\": \"jrs239-other-user\"\n}", "options": { "raw": { "language": "json" } } }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Different owner returns 404', () => pm.response.to.have.status(404));", "pm.test('Error is clear JSON', () => pm.expect(pm.response.json().error).to.be.a('string'));" ] } }]
+    },
+    {
+      "name": "05 DELETE remove the same comment - screenshot",
+      "request": {
+        "method": "DELETE", "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/jrs239/comments/{{commentId}}",
+        "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+        "pm.test('DELETE returns 200', () => pm.response.to.have.status(200));",
+        "pm.test('Deleted ID matches the created comment', () => pm.expect(pm.response.json().deletedId).to.equal(pm.collectionVariables.get('commentId')));"
+      ] } }]
+    },
+    {
+      "name": "06 DELETE again confirms it is gone",
+      "request": {
+        "method": "DELETE", "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/jrs239/comments/{{commentId}}",
+        "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Deleted comment returns 404', () => pm.response.to.have.status(404));"] } }]
+    },
+    {
+      "name": "07 POST reject incomplete text",
+      "request": {
+        "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/jrs239/comments",
+        "body": { "mode": "raw", "raw": "{\n  \"organizationId\": {{organizationId}},\n  \"text\": \"Good\",\n  \"userName\": \"{{userName}}\",\n  \"userId\": \"{{userId}}\"\n}", "options": { "raw": { "language": "json" } } }
+      },
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Invalid text returns 400', () => pm.response.to.have.status(400));"] } }]
+    }
+  ]
+}

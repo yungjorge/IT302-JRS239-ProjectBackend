@@ -1,5 +1,10 @@
 # Phase 2: Read MongoDB Data using Node.js
 
+Phase 3 adds the comments C.U.D. API while retaining the GET behavior below.
+See [the Phase 3 guide](../PHASE3.md) for the data contract, real MongoDB test
+suite, Postman collection, screenshot instructions, and Render setup.
+Run `npm test` in this directory for the Phase 3 integration checks.
+
 Jorge Sanchez | UCID: jrs239 | IT-302 | Section 451 | jrs239@njit.edu
 
 ## Phase 1 dataset
@@ -32,7 +37,7 @@ and logs. `.env.example` is a safe, blank configuration template.
   `limit()`, and `countDocuments()`.
 
 Runtime dependencies: `dotenv`, `mongodb`, `express`, `cors`.
-Temporary database tests and their dependency have been removed.
+Phase 3 integration tests use the built-in Node.js test runner and real MongoDB.
 
 ## Query parameters
 
@@ -84,5 +89,5 @@ GitHub repository: https://github.com/yungjorge/IT302-jrs239-ProjectBackend
 
 The real Phase 1 database was verified using read operations only.
 The local `.env` is excluded by the root `.gitignore` and must not be committed.
-The final Phase2 tag remains deferred until explicitly requested.
+The Phase2 tag exists in the repository.
 Check the professor's handout for any additional submission requirements.

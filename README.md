@@ -1,5 +1,16 @@
 # IT302 Phase 1 MongoDB Assignment
 
+## Phase 3: Create, Update, Delete comments
+
+The MVC backend now supports POST, PUT, and DELETE at
+`/api/v1/jrs239/comments`, using the separate `comments_jrs239` collection.
+The organization collection and GET routes are preserved.
+
+See [Phase 3 setup, API, testing, Postman screenshot instructions, and Render setup](PHASE3.md).
+Import [the Phase 3 Postman collection](postman/Phase3-jrs239.postman_collection.json).
+Run `npm test` from `backend` to verify against the real configured MongoDB database.
+Deployment and Phase 3 screenshot capture require the manual steps in that guide.
+
 Name: Jorge Sanchez  
 UCID: jrs239  
 Course: IT-302 Advanced Internet Applications  
@@ -39,5 +50,5 @@ From `backend`, run `npm install` and `npm start`.
 The endpoint is `http://localhost:5000/api/v1/jrs239/organizations`.
 It supports `itemsPerPage`, zero-based `pageNumber`, and the `login` text filter.
 
-The required requests were verified against the real database with HTTP 200
-and JSON responses. Postman screenshots are complete. The Phase2 tag is deferred.
+The Phase 2 requests were verified against the real database with HTTP 200
+and JSON responses. Phase 2 Postman screenshots are complete; the Phase2 tag exists.
