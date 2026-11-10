@@ -3,9 +3,16 @@
  * Email: jrs239@njit.edu
  * Assignment: Phases 2 and 3 MongoDB
  */
+import { ObjectId } from "mongodb";
+
 let organizationsCollection;
 
 export default class OrganizationsDAO {
+  static async getOrganization(id) {
+    if (!organizationsCollection) throw new Error("Organizations DAO has not been initialized");
+    return organizationsCollection.findOne({ _id: new ObjectId(id) });
+  }
+
   static async organizationExists(organizationId) {
     if (!organizationsCollection) throw new Error("Organizations DAO has not been initialized");
     return Boolean(await organizationsCollection.findOne({ id: organizationId }, { projection: { _id: 1 } }));

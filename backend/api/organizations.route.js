@@ -8,4 +8,5 @@ import OrganizationsController from "./organizations.controller.js";
 
 const router = Router();
 router.get("/", OrganizationsController.apiGetOrganizations);
+router.get("/:id", OrganizationsController.apiGetOrganization);
 export default router;

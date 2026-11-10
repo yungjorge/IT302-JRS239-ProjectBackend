@@ -13,6 +13,19 @@ function integerParameter(value, fallback, minimum, maximum) {
 }
 
 export default class OrganizationsController {
+  static async apiGetOrganization(req, res, next) {
+    if (!/^[0-9a-f]{24}$/i.test(req.params.id)) {
+      return res.status(400).json({ error: "Invalid organization ID" });
+    }
+    try {
+      const organization = await OrganizationsDAO.getOrganization(req.params.id);
+      if (!organization) return res.status(404).json({ error: "Organization not found" });
+      return res.json(organization);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async apiGetOrganizations(req, res, next) {
     const itemsPerPage = integerParameter(req.query.itemsPerPage, 20, 1, 100);
     // Pages are zero-based: pageNumber=0 is the first page.
